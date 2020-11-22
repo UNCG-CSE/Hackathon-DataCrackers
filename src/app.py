@@ -187,6 +187,57 @@ content_T1_layout = html.Div([
             align="start",
         ),
         html.Br(),
+    html.Div([
+    dbc.Row(
+        [
+            dbc.Col(
+                html.P("Year :"),
+                style=LABEL
+            ),
+             dbc.Col(
+                html.P("Week :"),
+                style=LABEL
+            )
+        ]
+    ),
+    html.Br(),
+    
+    dbc.Row(
+        [
+    dbc.Col(
+    dcc.Dropdown(
+                    id="year-dropdown",
+                    options=[
+                        {'label': x, 'value': x, 'disabled':False}
+                        for x in range(2015,2022)
+                    ],
+                    value=['2018','2019'],
+                    multi=True,
+                    clearable=True,
+                    style=DROPDOWN
+                )
+    ),
+    dbc.Col(
+    dcc.Dropdown(
+                    id="week-dropdown",
+                    options=[
+                        {'label': x, 'value': x, 'disabled':False}
+                        for x in range(1,53)
+                    ],
+                    value=['30','35'],
+                    multi=True,
+                    clearable=True,
+                    style=DROPDOWN
+                
+           )
+            ),
+             
+           
+            
+        ],
+        align="start",
+    ),],id='datatable-container'),
+        html.Br(),
         dbc.Row(
             [
                 dbc.Col(
@@ -383,6 +434,14 @@ def render_page_content(pathname):
     
 # Callback for Task-1
 @app.callback(
+    dash.dependencies.Output('datatable-container', 'style'),
+    [dash.dependencies.Input('option-dropdown', 'value')])
+def toggle_container3(toggle_value):
+    if toggle_value == 'week':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'} 
+@app.callback(
     [dash.dependencies.Output('dd-output-container', 'string_prefix'),
      dash.dependencies.Output('task1_map', 'figure')],
     [dash.dependencies.Input('meters', 'value'),
@@ -391,8 +450,10 @@ def render_page_content(pathname):
      dash.dependencies.Input('my-date-picker-range', 'start_date'),
      dash.dependencies.Input('my-date-picker-range', 'end_date'),
      dash.dependencies.Input('prediction-checklist', 'value'),
+     dash.dependencies.Input('year-dropdown', 'value'),
+     dash.dependencies.Input('week-dropdown', 'value')
      ])
-def update_output(meters, selected_value, value, start_date, end_date, pred_):
+def update_output(meters, selected_value, value, start_date, end_date, pred_, year, week):
     start_time = time()
     string_prefix = 'You have selected: '
     if start_date is not None:
@@ -453,8 +514,10 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_):
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
         if value == 'TC':
             if selected_value == 'week':
-                df_selected = df_meter.groupby("Week").agg({'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
-                x = df_selected["Week"]
+                df_selected = df_meter[df_meter['Year'].isin(year)]
+                df_selected = df_selected[df_selected['Week'].isin(week)]
+                df_selected = df_selected.groupby("Year-Week").agg({'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
+                x = df_selected["Year-Week"]
             elif selected_value == 'day':
                 df_selected = df_meter.groupby(["Date"]).sum().reset_index()
                 x = df_selected["Date"]
@@ -469,8 +532,10 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_):
                 x = df_selected["Year"]
         else:
             if selected_value == 'week':
-                df_selected = df_meter.groupby("Week").agg({'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
-                x = df_selected["Week"]
+                df_selected = df_meter[df_meter['Year'].isin(year)]
+                df_selected = df_selected[df_selected['Week'].isin(week)]
+                df_selected = df_selected.groupby("Year-Week").agg({'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
+                x = df_selected["Year-Week"]
             elif selected_value == 'day':
                 df_selected = df_meter.groupby(["Date"]).mean().reset_index()
                 x = df_selected["Date"]
