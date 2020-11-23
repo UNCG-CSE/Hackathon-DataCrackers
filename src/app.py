@@ -51,7 +51,6 @@ SIDEBAR_STYLE = {
 CONTENT_STYLE = {
     "marginLeft": "18rem",
     "marginRight": "2rem",
-    "padding": "2rem 1rem",
     "backgroundColor": "#0f2044",
     "fontFamily": "Sofia Pro"
 }
@@ -67,6 +66,7 @@ NAVLINK_ACTIVE = {
 
 LAYOUT = {
     "backgroundColor": "#0f2044",
+    "height": "100vh",
     "fontFamily": "Sofia Pro"
 }
 
@@ -97,8 +97,8 @@ sidebar = html.Div(
         ),
         dbc.Nav(
             [
-                dbc.NavLink("Task 1", href="/task-1", id="page-1-link", style=NAVLINK, className="navlink-active"),
-                dbc.NavLink("Task 2", href="/task-2", id="page-2-link", style=NAVLINK, className="navlink-active"),
+                dbc.NavLink("Energy Consumption & Prediction", href="/task-1", id="page-1-link", style=NAVLINK, className="navlink-active"),
+                dbc.NavLink("Average Predictions By Group", href="/task-2", id="page-2-link", style=NAVLINK, className="navlink-active"),
             ],
             vertical=True,
             pills=True
@@ -130,7 +130,9 @@ content_T1_layout = html.Div([
                         value=[df_labels["Names_cleaned"][0]],
                         clearable=False,
                         multi=True,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="multi-dropdown-custom"
+
                     ),
 
                 ),
@@ -165,9 +167,10 @@ content_T1_layout = html.Div([
                             {'label': 'Day', 'value': 'day'},
                             {'label': 'Hour', 'value': 'hour'},
                         ],
-                        value='year',
+                        value='hour',
                         clearable=False,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="dropdown-custom"
                     )
                 ),
                 dbc.Col(
@@ -180,7 +183,8 @@ content_T1_layout = html.Div([
                         ],
                         value='TC',
                         clearable=False,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="dropdown-custom"
                     )
                 )
 
@@ -214,7 +218,8 @@ content_T1_layout = html.Div([
                             value=['2018', '2019'],
                             multi=True,
                             clearable=True,
-                            style=DROPDOWN
+                            style=DROPDOWN,
+                            className="dropdown-custom"
                         )
                     ),
                     dbc.Col(
@@ -227,7 +232,8 @@ content_T1_layout = html.Div([
                             value=['30', '35'],
                             multi=True,
                             clearable=True,
-                            style=DROPDOWN
+                            style=DROPDOWN,
+                            className="dropdown-custom"
 
                         )
                     ),
@@ -263,7 +269,8 @@ content_T1_layout = html.Div([
                         max_date_allowed=date(2021, 11, 12),
                         initial_visible_month=date(2017, 8, 5),
                         start_date=date(2015, 1, 1),
-                        end_date=date(2020, 11, 12)
+                        end_date=date(2015, 1, 2),
+                        className="date-picker-custom"
                     )
 
                 ),
@@ -274,7 +281,8 @@ content_T1_layout = html.Div([
                                  for x in range(0, 24)],
                         value='0',
                         multi=False,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="dropdown-custom"
                     )
                 ),
                 dbc.Col(
@@ -284,7 +292,8 @@ content_T1_layout = html.Div([
                                  for x in range(0, 24)],
                         value='23',
                         multi=False,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="dropdown-custom"
                     )
                 )
 
@@ -311,7 +320,16 @@ content_T1_layout = html.Div([
         ),
         html.Div(id='dd-output-container'),
         html.Br(),
-        dcc.Graph(id='task1_map', figure={})
+        html.Div(
+            [   
+                dcc.Loading(
+                    id="loading-2",
+                    children=[html.Div([html.Div(id="loading-output-2")])],
+                    type="circle"
+                ),
+                dcc.Graph(id='task1_map', figure={})
+            ]
+        )
     ])
 ])
 
@@ -336,7 +354,8 @@ content_T2_layout = html.Div([
                         value=[df_labels["Names_cleaned"][0]],
                         clearable=False,
                         multi=True,
-                        style=DROPDOWN
+                        style=DROPDOWN,
+                        className="dropdown-custom"
                     ),
 
                 ),
@@ -368,7 +387,8 @@ content_T2_layout = html.Div([
                                  ],
                                  value='month',
                                  clearable=False,
-                                 style=DROPDOWN
+                                 style=DROPDOWN,
+                                 className="dropdown-custom"
                                  ),
 
                 ),
@@ -431,7 +451,8 @@ def toggle_container3(toggle_value):
 
 
 @app.callback(
-    [dash.dependencies.Output('dd-output-container', 'string_prefix'),
+    [dash.dependencies.Output("loading-output-2", "figure"),
+     dash.dependencies.Output('dd-output-container', 'string_prefix'),
      dash.dependencies.Output('task1_map', 'figure')],
     [dash.dependencies.Input('meters', 'value'),
      dash.dependencies.Input('option-dropdown', 'value'),
@@ -462,27 +483,6 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     if len(string_prefix) == len('You have selected: '):
         string_prefix = 'Select a date to see it displayed here'
 
-    layout = go.Layout(
-        autosize=False,
-        height=400,
-
-        xaxis=go.layout.XAxis(linecolor='black',
-                              linewidth=1,
-                              mirror=True),
-
-        yaxis=go.layout.YAxis(linecolor='black',
-                              linewidth=1,
-                              mirror=True),
-
-        margin=go.layout.Margin(
-            l=10,
-            r=10,
-            b=10,
-            t=20,
-            pad=4
-        )
-    )
-
     def f(df):
         # df = df.copy()
         # df['Datetime'] = df['Datetime']
@@ -494,6 +494,20 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
         df['Hour'] = df['Datetime'].dt.strftime('%Y-%m-%d %H')
         df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
         return df
+
+    layout = go.Layout(
+        autosize=False,
+        height=400,
+
+        xaxis=go.layout.XAxis(linecolor='black',
+                              linewidth=1,
+                              mirror=True),
+
+        yaxis=go.layout.YAxis(linecolor='black',
+                              linewidth=1,
+                              mirror=True)
+
+    )
 
     fig = go.Figure(layout=layout)
 
@@ -507,41 +521,63 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
         if value == 'TC':
+            y_label = "Total Energy Consumption"
             if selected_value == 'week':
+                x_label = "Week"
+                fig_title = "Total Energy Consumption for each week"
                 df_selected = df_meter[df_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
                 df_selected = df_selected.groupby("Year-Week").agg(
                     {'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
                 x = df_selected["Year-Week"]
             elif selected_value == 'day':
+                x_label = "Day"
+                fig_title = "Total Energy Consumption for each day"
                 df_selected = df_meter.groupby(["Date"]).sum().reset_index()
                 x = df_selected["Date"]
             elif selected_value == 'hour':
+                x_label = "Hour"
+                fig_title = "Total Energy Consumption for each hour"
                 df_selected = df_meter
                 x = df_selected["Hour"]
             elif selected_value == 'month':
+                x_label = "Month"
+                fig_title = "Total Energy Consumption for each month"
                 df_selected = df_meter.groupby(["Month"]).sum().reset_index()
                 x = df_selected["Month"]
             else:
+                x_label = "Year"
+                fig_title = "Total Energy Consumption for each year"
                 df_selected = df_meter.groupby(["Year"]).sum().reset_index()
                 x = df_selected["Year"]
         else:
+            y_label = "Average Hourly Energy Consumption"
             if selected_value == 'week':
+                x_label = "Week"
+                fig_title = "Average Hourly Energy Consumption by week"
                 df_selected = df_meter[df_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
                 df_selected = df_selected.groupby("Year-Week").agg(
                     {'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
                 x = df_selected["Year-Week"]
             elif selected_value == 'day':
+                x_label = "Day"
+                fig_title = "Average Hourly Energy Consumption by day"
                 df_selected = df_meter.groupby(["Date"]).mean().reset_index()
                 x = df_selected["Date"]
             elif selected_value == 'hour':
+                x_label = "Hour"
+                fig_title = "Average Hourly Energy Consumption by hour"
                 df_selected = df_meter
                 x = df_selected["Hour"]
             elif selected_value == 'month':
+                x_label = "Month"
+                fig_title = "Average Hourly Energy Consumption by month"
                 df_selected = df_meter.groupby(["Month"]).mean().reset_index()
                 x = df_selected["Month"]
             else:
+                x_label = "Year"
+                fig_title = "Average Hourly Energy Consumption by year"
                 df_selected = df_meter.groupby(["Year"]).mean().reset_index()
                 x = df_selected["Year"]
 
@@ -591,24 +627,25 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
         )
     )
     string_prefix = string_prefix + "; response time is {:04f} seconds".format(time() - start_time)
-    return string_prefix, fig
+
+    fig.update_layout(template="plotly_white", title=fig_title, xaxis_title=x_label, yaxis_title=y_label, legend_title="Meters",)
+
+    return fig, string_prefix, fig
 
 
 @app.callback(
     [dash.dependencies.Output('task2_map', 'figure')],
     [dash.dependencies.Input('meters_2', 'value'),dash.dependencies.Input('choice_dropdown', 'value')])
 def update_output_2(meters,category_value):
-    print(category_value)
-
     def f(df):
         # df = df.copy()
         # df['Datetime'] = df['Datetime']
         df['Month'] = df['Datetime'].dt.month
         df['Weekday'] = df['Datetime'].apply(lambda t: t.weekday())
-        df['Week'] = df['Datetime'].dt.isocalendar().week
+        df['Week'] = df['Datetime'].dt.week
         df['Day'] = df['Datetime'].dt.day
         df['Hour'] = df['Datetime'].dt.hour
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
         return df
 
 
@@ -640,8 +677,6 @@ def update_output_2(meters,category_value):
             df_selected = df_meter.groupby(["Week"]).mean().reset_index()
             x = df_selected["Week"]
             x_title = "Week"
-
-        print(x)
 
         layout = go.Layout(
             title=fig_title,
@@ -687,7 +722,6 @@ def update_output_2(meters,category_value):
     )
     fig.update_yaxes(title_text = "Usage in Units")
     if category_value == "month":
-        print('here')
         fig.update_layout(
             xaxis=dict(
                 tickmode='array',
@@ -696,7 +730,6 @@ def update_output_2(meters,category_value):
             )
         )
     elif category_value =="day":
-        print('here')
         fig.update_layout(
             xaxis=dict(
                 tickmode='array',
