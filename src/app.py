@@ -14,8 +14,9 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import date
 from time import time
+import datetime as dt
 
-external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css','styles.css']
+external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css', 'styles.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -26,7 +27,7 @@ df_labels = pd.read_excel("../data/Meter Names and Labels.xlsx")
 names_cleaned = []
 
 for item in df_labels["Name"]:
-    name = item.split("-")[0].replace("'","").replace(" ","").strip()
+    name = item.split("-")[0].replace("'", "").replace(" ", "").strip()
     if name == "JacksonLibraryTower_kWh":
         name = "JacksonLibraryTower"
     names_cleaned.append(name)
@@ -42,10 +43,10 @@ SIDEBAR_STYLE = {
     "width": "16rem",
     "padding": "2rem 1rem",
     "backgroundColor": "#ffb71b",
-    "color" : "#0f2044"
+    "color": "#0f2044"
 }
 
-# the styles for the main content position it to the right of the sidebar and
+# the styles for the main content position it is to the right of the sidebar and
 # add some padding.
 CONTENT_STYLE = {
     "marginLeft": "18rem",
@@ -56,11 +57,11 @@ CONTENT_STYLE = {
 }
 
 NAVLINK = {
-    "color" : "#0f2044"
+    "color": "#0f2044"
 }
 
 NAVLINK_ACTIVE = {
-    "color" : "#fff",
+    "color": "#fff",
     "backgroundColor": "#0f2044"
 }
 
@@ -82,7 +83,7 @@ HEADER = {
 }
 
 SUBTITLE = {
-    "color" : "#fff",
+    "color": "#fff",
     "fontWeight": "bold"
 }
 
@@ -125,7 +126,7 @@ content_T1_layout = html.Div([
                     dcc.Dropdown(
                         id="meters",
                         options=[{"label": row['Label'], "value": row['Names_cleaned']}
-                                for index, row in df_labels.iterrows()],
+                                 for index, row in df_labels.iterrows()],
                         value=[df_labels["Names_cleaned"][0]],
                         clearable=False,
                         multi=True,
@@ -144,7 +145,7 @@ content_T1_layout = html.Div([
                     html.P("Time Interval :"),
                     style=LABEL
                 ),
-        
+
                 dbc.Col(
                     html.P("Average/Total Consumption :"),
                     style=LABEL
@@ -187,63 +188,69 @@ content_T1_layout = html.Div([
             align="start",
         ),
         html.Br(),
-    html.Div([
-    dbc.Row(
-        [
-            dbc.Col(
-                html.P("Year :"),
-                style=LABEL
+        html.Div([
+            dbc.Row(
+                [
+                    dbc.Col(
+                        html.P("Year :"),
+                        style=LABEL
+                    ),
+                    dbc.Col(
+                        html.P("Week :"),
+                        style=LABEL
+                    )
+                ]
             ),
-             dbc.Col(
-                html.P("Week :"),
-                style=LABEL
-            )
-        ]
-    ),
-    html.Br(),
-    
-    dbc.Row(
-        [
-    dbc.Col(
-    dcc.Dropdown(
-                    id="year-dropdown",
-                    options=[
-                        {'label': x, 'value': x, 'disabled':False}
-                        for x in range(2015,2022)
-                    ],
-                    value=['2018','2019'],
-                    multi=True,
-                    clearable=True,
-                    style=DROPDOWN
-                )
-    ),
-    dbc.Col(
-    dcc.Dropdown(
-                    id="week-dropdown",
-                    options=[
-                        {'label': x, 'value': x, 'disabled':False}
-                        for x in range(1,53)
-                    ],
-                    value=['30','35'],
-                    multi=True,
-                    clearable=True,
-                    style=DROPDOWN
-                
-           )
-            ),
-             
-           
-            
-        ],
-        align="start",
-    ),],id='datatable-container'),
+
+            dbc.Row(
+                [
+                    dbc.Col(
+                        dcc.Dropdown(
+                            id="year-dropdown",
+                            options=[
+                                {'label': x, 'value': x, 'disabled': False}
+                                for x in range(2015, 2022)
+                            ],
+                            value=['2018', '2019'],
+                            multi=True,
+                            clearable=True,
+                            style=DROPDOWN
+                        )
+                    ),
+                    dbc.Col(
+                        dcc.Dropdown(
+                            id="week-dropdown",
+                            options=[
+                                {'label': x, 'value': x, 'disabled': False}
+                                for x in range(1, 53)
+                            ],
+                            value=['30', '35'],
+                            multi=True,
+                            clearable=True,
+                            style=DROPDOWN
+
+                        )
+                    ),
+
+                ],
+                align="start",
+            ), ], id='datatable-container'),
         html.Br(),
         dbc.Row(
             [
                 dbc.Col(
                     html.P("Date :"),
                     style=LABEL
-                )
+                ),
+                dbc.Col(
+                    html.P("Start Time (in hours) :"),
+                    style=LABEL
+                ),
+                dbc.Col(
+                    html.P("End Time (in hours) :"),
+                    style=LABEL
+                ),
+
             ]
         ),
         dbc.Row(
@@ -260,6 +267,26 @@ content_T1_layout = html.Div([
                     )
 
                 ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="start-hour-dropdown",
+                        options=[{'label': str(x), 'value': str(x), 'disabled': False}
+                                 for x in range(0, 24)],
+                        value='0',
+                        multi=False,
+                        style=DROPDOWN
+                    )
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="end-hour-dropdown",
+                        options=[{'label': str(x), 'value': str(x), 'disabled': False}
+                                 for x in range(0, 24)],
+                        value='23',
+                        multi=False,
+                        style=DROPDOWN
+                    )
+                )
 
             ],
             align="start",
@@ -270,7 +297,7 @@ content_T1_layout = html.Div([
                 dbc.Col(
 
                     dcc.Checklist(
-                        id="prediction-checklist",   
+                        id="prediction-checklist",
                         options=[
                             {'label': 'Predictions', 'value': 'Predictions'}
                         ],
@@ -305,7 +332,7 @@ content_T2_layout = html.Div([
                     dcc.Dropdown(
                         id="meters_2",
                         options=[{"label": row['Label'], "value": row['Names_cleaned']}
-                                for index, row in df_labels.iterrows()],
+                                 for index, row in df_labels.iterrows()],
                         value=[df_labels["Names_cleaned"][0]],
                         clearable=False,
                         multi=True,
@@ -324,7 +351,7 @@ content_T2_layout = html.Div([
                     html.P("Time Interval :"),
                     style=LABEL
                 ),
-        
+
                 dbc.Col(
                     html.P("Average/Total Consumption :"),
                     style=LABEL
@@ -401,10 +428,11 @@ content_T2_layout = html.Div([
 
 # App Layout
 app.layout = html.Div([
-    dcc.Location(id="url"), 
-    sidebar, 
+    dcc.Location(id="url"),
+    sidebar,
     content
-],style=LAYOUT)
+], style=LAYOUT)
+
 
 # this callback uses the current pathname to set the active state of the
 # corresponding nav link to true, allowing users to tell see page they are on
@@ -417,6 +445,7 @@ def toggle_active_links(pathname):
         # Treat page 1 as the homepage / index
         return True, False
     return [pathname == f"/task-{i}" for i in range(1, 3)]
+
 
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
@@ -431,7 +460,8 @@ def render_page_content(pathname):
             html.P(f"The pathname {pathname} was not recognised..."),
         ]
     )
-    
+
+
 # Callback for Task-1
 @app.callback(
     dash.dependencies.Output('datatable-container', 'style'),
@@ -440,7 +470,9 @@ def toggle_container3(toggle_value):
     if toggle_value == 'week':
         return {'display': 'block'}
     else:
-        return {'display': 'none'} 
+        return {'display': 'none'}
+
+
 @app.callback(
     [dash.dependencies.Output('dd-output-container', 'string_prefix'),
      dash.dependencies.Output('task1_map', 'figure')],
@@ -449,43 +481,48 @@ def toggle_container3(toggle_value):
      dash.dependencies.Input('demo-dropdown', 'value'),
      dash.dependencies.Input('my-date-picker-range', 'start_date'),
      dash.dependencies.Input('my-date-picker-range', 'end_date'),
+     dash.dependencies.Input('start-hour-dropdown', 'value'),
+     dash.dependencies.Input('end-hour-dropdown', 'value'),
      dash.dependencies.Input('prediction-checklist', 'value'),
      dash.dependencies.Input('year-dropdown', 'value'),
      dash.dependencies.Input('week-dropdown', 'value')
      ])
-def update_output(meters, selected_value, value, start_date, end_date, pred_, year, week):
+def update_output(meters, selected_value, value, start_date, end_date, start_hour, end_hour, pred_, year, week):
     start_time = time()
     string_prefix = 'You have selected: '
     if start_date is not None:
         start_date_object = date.fromisoformat(start_date)
-        start_date_string = start_date_object.strftime('%B %d, %Y')
+        mytime = dt.datetime.strptime(start_hour, '%H').time()
+        start_datetime_object = dt.datetime.combine(start_date_object, mytime)
+        start_date_string = start_datetime_object.strftime('%B %d, %Y  %H:%M')
         string_prefix = string_prefix + 'Start Date: ' + start_date_string + ' | '
     if end_date is not None:
         end_date_object = date.fromisoformat(end_date)
-        end_date_string = end_date_object.strftime('%B %d, %Y')
+        mytime = dt.datetime.strptime(end_hour, '%H').time()
+        end_datetime_object = dt.datetime.combine(end_date_object, mytime)
+        end_date_string = end_datetime_object.strftime('%B %d, %Y %H:%M')
         string_prefix = string_prefix + 'End Date: ' + end_date_string
     if len(string_prefix) == len('You have selected: '):
         string_prefix = 'Select a date to see it displayed here'
-
 
     layout = go.Layout(
         autosize=False,
         height=400,
 
-        xaxis= go.layout.XAxis(linecolor = 'black',
-                            linewidth = 1,
-                            mirror = True),
+        xaxis=go.layout.XAxis(linecolor='black',
+                              linewidth=1,
+                              mirror=True),
 
-        yaxis= go.layout.YAxis(linecolor = 'black',
-                            linewidth = 1,
-                            mirror = True),
+        yaxis=go.layout.YAxis(linecolor='black',
+                              linewidth=1,
+                              mirror=True),
 
         margin=go.layout.Margin(
             l=10,
             r=10,
             b=10,
             t=20,
-            pad = 4
+            pad=4
         )
     )
 
@@ -497,7 +534,7 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
         df['Month'] = df['Datetime'].dt.month
         df['Week'] = df['Datetime'].dt.week
         df['Day'] = df['Datetime'].dt.day
-        df['Hour'] = df['Datetime'].dt.hour
+        df['Hour'] = df['Datetime'].dt.strftime('%Y-%m-%d %H')
         df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
         return df
 
@@ -507,8 +544,8 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
 
         df_meter = pd.read_csv("../data/" + meter + "_results.csv")
         df_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
-        df_meter = df_meter[(df_meter['Datetime'] >= pd.to_datetime(start_date_object, utc=True)) &
-                            (df_meter['Datetime'] <= pd.to_datetime(end_date_object, utc=True))]
+        df_meter = df_meter[(df_meter['Datetime'] >= pd.to_datetime(start_datetime_object, utc=True)) &
+                            (df_meter['Datetime'] <= pd.to_datetime(end_datetime_object, utc=True))]
         df_meter = f(df_meter)
 
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
@@ -516,13 +553,14 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
             if selected_value == 'week':
                 df_selected = df_meter[df_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
-                df_selected = df_selected.groupby("Year-Week").agg({'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
+                df_selected = df_selected.groupby("Year-Week").agg(
+                    {'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
                 x = df_selected["Year-Week"]
             elif selected_value == 'day':
                 df_selected = df_meter.groupby(["Date"]).sum().reset_index()
                 x = df_selected["Date"]
             elif selected_value == 'hour':
-                df_selected = df_meter.groupby(["Hour"]).sum().reset_index()
+                df_selected = df_meter
                 x = df_selected["Hour"]
             elif selected_value == 'month':
                 df_selected = df_meter.groupby(["Month"]).sum().reset_index()
@@ -534,13 +572,14 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
             if selected_value == 'week':
                 df_selected = df_meter[df_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
-                df_selected = df_selected.groupby("Year-Week").agg({'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
+                df_selected = df_selected.groupby("Year-Week").agg(
+                    {'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
                 x = df_selected["Year-Week"]
             elif selected_value == 'day':
                 df_selected = df_meter.groupby(["Date"]).mean().reset_index()
                 x = df_selected["Date"]
             elif selected_value == 'hour':
-                df_selected = df_meter.groupby(["Hour"]).mean().reset_index()
+                df_selected = df_meter
                 x = df_selected["Hour"]
             elif selected_value == 'month':
                 df_selected = df_meter.groupby(["Month"]).mean().reset_index()
@@ -561,27 +600,25 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
             ))
 
             if selected_value == 'hour':
-
                 fig.add_trace(go.Scatter(
-                name=meter + ' Lower',
-                mode="lines", x=x, y=df_selected["obs_ci_lower"],
-                fill= "tonexty", 
-                marker = {"color": "rgba(135, 206, 250, 0.1)"}, 
+                    name=meter + ' Lower',
+                    mode="lines", x=x, y=df_selected["obs_ci_lower"],
+                    fill="tonexty",
+                    marker={"color": "rgba(135, 206, 250, 0.1)"},
                 ))
 
                 fig.add_trace(go.Scatter(
-                name=meter + ' Upper',
-                mode="lines", x=x, y=df_selected["obs_ci_upper"],
-                fill= "tonexty", 
-                marker = {"color": "rgba(135, 206, 250, 0.1)"}, 
+                    name=meter + ' Upper',
+                    mode="lines", x=x, y=df_selected["obs_ci_upper"],
+                    fill="tonexty",
+                    marker={"color": "rgba(135, 206, 250, 0.1)"},
                 ))
 
         else:
-             fig.add_trace(go.Scatter(
+            fig.add_trace(go.Scatter(
                 name=meter,
                 mode="markers+lines", x=x, y=df_selected["Actual"]
-            ))   
-
+            ))
 
     fig.update_xaxes(
         rangeslider_visible=True,
@@ -596,8 +633,9 @@ def update_output(meters, selected_value, value, start_date, end_date, pred_, ye
             ])
         )
     )
-    string_prefix = string_prefix + "; response time is {:04f} seconds".format(time()-start_time)
+    string_prefix = string_prefix + "; response time is {:04f} seconds".format(time() - start_time)
     return string_prefix, fig
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
