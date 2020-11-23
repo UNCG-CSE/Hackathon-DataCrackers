@@ -22,7 +22,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.config.suppress_callback_exceptions = True
 
-df_labels = pd.read_excel("../data/Meter Names and Labels.xlsx")
+df_labels = pd.read_excel("../data/Analysis/Meter Names and Labels.xlsx")
 
 names_cleaned = []
 
@@ -348,80 +348,37 @@ content_T2_layout = html.Div([
         dbc.Row(
             [
                 dbc.Col(
-                    html.P("Time Interval :"),
+                    html.P("Choose a time category :"),
                     style=LABEL
                 ),
 
-                dbc.Col(
-                    html.P("Average/Total Consumption :"),
-                    style=LABEL
-                )
+
             ]
         ),
         dbc.Row(
             [
                 dbc.Col(
 
-                    dcc.Dropdown(
-                        id="option-dropdown-2",
-                        options=[
-                            {'label': 'Year', 'value': 'year'},
-                            {'label': 'Month', 'value': 'month'},
-                            {'label': 'Week', 'value': 'week'},
-                            {'label': 'Day', 'value': 'day'},
-                            {'label': 'Hour', 'value': 'hour'},
-                        ],
-                        value='year',
-                        clearable=False,
-                        style=DROPDOWN
-                    )
+                    dcc.Dropdown(id='choice_dropdown',
+                                 options=[
+                                     {'label': 'Hour of Day', 'value': 'hour'},
+                                     {'label': 'Day of Week', 'value': 'day'},
+                                     {'label': 'Week of Year', 'value': 'week'},
+                                     {'label': 'Month of Year', 'value': 'month'},
+                                 ],
+                                 value='month',
+                                 clearable=False,
+                                 style=DROPDOWN
+                                 ),
+
                 ),
 
-                dbc.Col(
-
-                    dcc.Dropdown(
-                        id="demo-dropdown-2",
-                        options=[
-                            {'label': 'Total Consumption', 'value': 'TC'},
-                            {'label': 'Average Consumption', 'value': 'AC'}
-                        ],
-                        value='TC',
-                        clearable=False,
-                        style=DROPDOWN
-                    )
-                )
 
             ],
             align="start",
         ),
         html.Br(),
-        dbc.Row(
-            [
-                dbc.Col(
-                    html.P("Date :"),
-                    style=LABEL
-                )
-            ]
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-
-                    dcc.DatePickerRange(
-                        id='my-date-picker-range-2',
-                        min_date_allowed=date(1995, 8, 5),
-                        max_date_allowed=date(2021, 11, 12),
-                        initial_visible_month=date(2017, 8, 5),
-                        start_date=date(2015, 1, 1),
-                        end_date=date(2020, 11, 12)
-                    )
-
-                ),
-
-            ],
-            align="start",
-        ),
-        html.Br(),
+        html.Div(id='dummy-container'),
         dcc.Graph(id='task2_map', figure={})
     ])
 ])
@@ -542,7 +499,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
     for meter in meters:
 
-        df_meter = pd.read_csv("../data/" + meter + "_results.csv")
+        df_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
         df_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
         df_meter = df_meter[(df_meter['Datetime'] >= pd.to_datetime(start_datetime_object, utc=True)) &
                             (df_meter['Datetime'] <= pd.to_datetime(end_datetime_object, utc=True))]
@@ -635,6 +592,120 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     )
     string_prefix = string_prefix + "; response time is {:04f} seconds".format(time() - start_time)
     return string_prefix, fig
+
+
+@app.callback(
+    [dash.dependencies.Output('task2_map', 'figure')],
+    [dash.dependencies.Input('meters_2', 'value'),dash.dependencies.Input('choice_dropdown', 'value')])
+def update_output_2(meters,category_value):
+    print(category_value)
+
+    def f(df):
+        # df = df.copy()
+        # df['Datetime'] = df['Datetime']
+        df['Month'] = df['Datetime'].dt.month
+        df['Weekday'] = df['Datetime'].apply(lambda t: t.weekday())
+        df['Week'] = df['Datetime'].dt.isocalendar().week
+        df['Day'] = df['Datetime'].dt.day
+        df['Hour'] = df['Datetime'].dt.hour
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
+        return df
+
+
+    for meter in meters:
+
+        df_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
+        df_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
+        df_meter = df_meter[df_meter['Datetime'] >= '2020-01-01']
+        df_meter = f(df_meter)
+
+        # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
+        if category_value == 'month':
+            df_selected = df_meter.groupby("Month").mean().reset_index()
+            x = df_selected["Month"]
+            fig_title = "Usage on basis of Month of the Year"
+            x_title = "Month"
+        if category_value == 'day':
+            fig_title = "Usage on basis of Day of the Week"
+            df_selected = df_meter.groupby("Weekday").mean().reset_index()
+            x = df_selected["Weekday"]
+            x_title = "Day"
+        elif category_value == 'hour':
+            fig_title = "Usage on basis of Hour of the Day"
+            df_selected = df_meter.groupby(["Hour"]).mean().reset_index()
+            x = df_selected["Hour"]
+            x_title = "Hour"
+        elif category_value == 'week':
+            fig_title = "Usage on basis of Week of the Year"
+            df_selected = df_meter.groupby(["Week"]).mean().reset_index()
+            x = df_selected["Week"]
+            x_title = "Week"
+
+        print(x)
+
+        layout = go.Layout(
+            title=fig_title,
+            autosize=False,
+            height=500,
+
+            xaxis=go.layout.XAxis(linecolor='black',
+                                  linewidth=1,
+                                  mirror=True,),
+
+            yaxis=go.layout.YAxis(linecolor='black',
+                                  linewidth=1,
+                                  mirror=True),
+        )
+        fig = go.Figure(layout=layout)
+
+        fig.add_trace(go.Scatter(
+            name=meter + ' Actual',
+            mode='markers', x=x, y=df_selected["Actual"]
+        ))
+
+        fig.add_trace(go.Scatter(
+            name=meter + ' Predicted',
+            mode="markers+lines", x=x, y=df_selected["Predicted"]
+        ))
+
+
+
+    fig.update_xaxes(
+        title_text = x_title,
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=1, label="1d", step="day", stepmode="backward"),
+                dict(count=1, label="1m", step="month", stepmode="backward"),
+                dict(count=6, label="6m", step="month", stepmode="backward"),
+                dict(count=1, label="YTD", step="year", stepmode="todate"),
+                dict(count=1, label="1y", step="year", stepmode="backward"),
+                dict(step="all")
+            ])
+        ),
+        dtick = 1
+    )
+    fig.update_yaxes(title_text = "Usage in Units")
+    if category_value == "month":
+        print('here')
+        fig.update_layout(
+            xaxis=dict(
+                tickmode='array',
+                tickvals=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                ticktext=['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+            )
+        )
+    elif category_value =="day":
+        print('here')
+        fig.update_layout(
+            xaxis=dict(
+                tickmode='array',
+                tickvals=[0, 1, 2, 3, 4, 5, 6],
+                ticktext=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            )
+        )
+
+    return [fig]
 
 
 if __name__ == '__main__':
