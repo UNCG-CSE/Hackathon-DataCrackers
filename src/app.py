@@ -244,6 +244,7 @@ content_T1_layout = html.Div([
                 align="start",
             ), ], id='datatable-container'),
         html.Br(),
+        html.Div([
         dbc.Row(
             [
                 dbc.Col(
@@ -261,6 +262,7 @@ content_T1_layout = html.Div([
 
             ]
         ),
+
         dbc.Row(
             [
                 dbc.Col(
@@ -301,7 +303,7 @@ content_T1_layout = html.Div([
 
             ],
             align="start",
-        ),
+        ),],id="datatable-container4"),
         html.Br(),
         dbc.Row(
             [
@@ -447,6 +449,15 @@ def render_page_content(pathname):
     [dash.dependencies.Input('option-dropdown', 'value')])
 def toggle_container3(toggle_value):
     if toggle_value == 'week':
+        return {'display': 'block'}
+    else:
+        return {'display': 'none'}
+
+@app.callback(
+    dash.dependencies.Output('datatable-container4', 'style'),
+    [dash.dependencies.Input('option-dropdown', 'value')])
+def toggle_container1(toggle_value):
+    if toggle_value == 'year' or toggle_value == 'month' or toggle_value == 'day' or toggle_value == 'hour':
         return {'display': 'block'}
     else:
         return {'display': 'none'}
