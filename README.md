@@ -9,6 +9,7 @@
 * [Data Source](#data-source)
 * [Goals](#goals)
 * [Contributors](#contributors)
+* [Setup](#Setup)
 
 ## Introduction
 
@@ -19,10 +20,18 @@ An Interactive Dashboard is developed to summerize high-frequency energy consump
 
 * Python
 * Dash
-* HTML
 * CSS
-* JavaScript
 * Bootstrap
+
+#### Libraries used
+
+* plotly
+* pandas
+* dash
+* dash_core_components
+* dash_html_components
+* dash_bootstrap_components
+
 
 ## Data Source
 
@@ -50,3 +59,7 @@ An Interactive Dashboard is developed to summerize high-frequency energy consump
 
 * Dr.Somya Mohanty
 * Will Queen
+
+## Setup
+
+The /src folder contains the Jupyter notebooks and the /data folder contains the datasets that are used for this project. The detailed information and documentation about this project is included in the report under /docs folder in this repository.
