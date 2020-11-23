@@ -270,8 +270,8 @@ content_T1_layout = html.Div([
                         min_date_allowed=date(1995, 8, 5),
                         max_date_allowed=date(2021, 11, 12),
                         initial_visible_month=date(2015, 1, 1),
-                        start_date=date(2015, 1, 1),
-                        end_date=date(2015, 1, 2),
+                        start_date=date(2017, 1, 1),
+                        end_date=date(2017, 1, 2),
                         className="date-picker-custom"
                     )
 
@@ -488,13 +488,13 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     def f(df):
         # df = df.copy()
         # df['Datetime'] = df['Datetime']
-        df['Date'] = df['Datetime'].dt.strftime('%B %d, %Y')
+        df['Date'] = df['Datetime'].dt.strftime('%Y-%m-%d')
         df['Year'] = df['Datetime'].dt.year
-        df['Month'] = df['Datetime'].dt.month
-        df['Week'] = df['Datetime'].dt.week
-        df['Day'] = df['Datetime'].dt.day
+        df['Month'] = df['Datetime'].dt.strftime('%Y-%m')
+        df['Week'] = df['Datetime'].dt.isocalendar().week
+        df['Day'] = df['Datetime'].dt.strftime('%Y-%m-%d')
         df['Hour'] = df['Datetime'].dt.strftime('%Y-%m-%d %H')
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
         return df
 
     layout = go.Layout(
@@ -644,10 +644,10 @@ def update_output_2(meters,category_value):
         # df['Datetime'] = df['Datetime']
         df['Month'] = df['Datetime'].dt.month
         df['Weekday'] = df['Datetime'].apply(lambda t: t.weekday())
-        df['Week'] = df['Datetime'].dt.week
+        df['Week'] = df['Datetime'].dt.isocalendar().week
         df['Day'] = df['Datetime'].dt.day
         df['Hour'] = df['Datetime'].dt.hour
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
         return df
 
 
