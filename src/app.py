@@ -357,7 +357,7 @@ content_T2_layout = html.Div([
                         clearable=False,
                         multi=True,
                         style=DROPDOWN,
-                        className="dropdown-custom"
+                        className="multi-dropdown-custom"
                     ),
 
                 ),
@@ -491,10 +491,10 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
         df['Date'] = df['Datetime'].dt.strftime('%Y-%m-%d')
         df['Year'] = df['Datetime'].dt.year
         df['Month'] = df['Datetime'].dt.strftime('%Y-%m')
-        df['Week'] = df['Datetime'].dt.isocalendar().week
+        df['Week'] = df['Datetime'].dt.week
         df['Day'] = df['Datetime'].dt.strftime('%Y-%m-%d')
         df['Hour'] = df['Datetime'].dt.strftime('%Y-%m-%d %H')
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
         return df
 
     layout = go.Layout(
@@ -644,12 +644,26 @@ def update_output_2(meters,category_value):
         # df['Datetime'] = df['Datetime']
         df['Month'] = df['Datetime'].dt.month
         df['Weekday'] = df['Datetime'].apply(lambda t: t.weekday())
-        df['Week'] = df['Datetime'].dt.isocalendar().week
+        df['Week'] = df['Datetime'].dt.week
         df['Day'] = df['Datetime'].dt.day
         df['Hour'] = df['Datetime'].dt.hour
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.isocalendar().week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
         return df
 
+    layout = go.Layout(
+            autosize=False,
+            height=500,
+
+            xaxis=go.layout.XAxis(linecolor='black',
+                                  linewidth=1,
+                                  mirror=True,),
+
+            yaxis=go.layout.YAxis(linecolor='black',
+                                  linewidth=1,
+                                  mirror=True),
+        )
+
+    fig = go.Figure(layout=layout)
 
     for meter in meters:
 
@@ -679,21 +693,6 @@ def update_output_2(meters,category_value):
             df_selected = df_meter.groupby(["Week"]).mean().reset_index()
             x = df_selected["Week"]
             x_title = "Week"
-
-        layout = go.Layout(
-            title=fig_title,
-            autosize=False,
-            height=500,
-
-            xaxis=go.layout.XAxis(linecolor='black',
-                                  linewidth=1,
-                                  mirror=True,),
-
-            yaxis=go.layout.YAxis(linecolor='black',
-                                  linewidth=1,
-                                  mirror=True),
-        )
-        fig = go.Figure(layout=layout)
 
         fig.add_trace(go.Scatter(
             name=meter + ' Actual',
@@ -739,6 +738,8 @@ def update_output_2(meters,category_value):
                 ticktext=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
             )
         )
+
+    fig.update_layout(title=fig_title, legend_title="Meters")
 
     return [fig]
 
