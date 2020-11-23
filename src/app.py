@@ -572,7 +572,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
             if selected_value == 'week':
                 x_label = "Week"
                 fig_title = "Average Hourly Energy Consumption by week"
-                df_selected = df_meter[df_meter['Year'].isin(year)]
+                df_selected = df_week_meter[df_week_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
                 df_selected = df_selected.groupby("Year-Week").agg(
                     {'Hour': 'count', 'Actual': 'mean', 'Predicted': 'mean'}).reset_index()
