@@ -517,9 +517,13 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
         df_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
         df_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
+        df_week_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
+        df_week_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
         df_meter = df_meter[(df_meter['Datetime'] >= pd.to_datetime(start_datetime_object, utc=True)) &
                             (df_meter['Datetime'] <= pd.to_datetime(end_datetime_object, utc=True))]
+        
         df_meter = f(df_meter)
+        df_week_meter = f(df_week_meter)
 
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
         if value == 'TC':
@@ -527,7 +531,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
             if selected_value == 'week':
                 x_label = "Week"
                 fig_title = "Total Energy Consumption for each week"
-                df_selected = df_meter[df_meter['Year'].isin(year)]
+                df_selected = df_week_meter[df_week_meter['Year'].isin(year)]
                 df_selected = df_selected[df_selected['Week'].isin(week)]
                 df_selected = df_selected.groupby("Year-Week").agg(
                     {'Hour': 'count', 'Actual': 'sum', 'Predicted': 'sum'}).reset_index()
