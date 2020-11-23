@@ -505,7 +505,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
         df['Week'] = df['Datetime'].dt.week
         df['Day'] = df['Datetime'].dt.strftime('%Y-%m-%d')
         df['Hour'] = df['Datetime'].dt.strftime('%Y-%m-%d %H')
-        df['Year-Week'] = df['Datetime'].dt.year.astype(str) + '-' + df['Datetime'].dt.week.astype(str)
+        df['Year-Week'] = df['Datetime'].dt.week.astype(str) + '-' +  df['Datetime'].dt.year.astype(str) 
         return df
 
     layout = go.Layout(
