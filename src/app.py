@@ -930,7 +930,7 @@ def update_output_2(meters, category_value, start_year, start_month, end_year, e
         ),
         dtick = 1
     )
-    fig.update_yaxes(title_text = "Usage in Units")
+    fig.update_yaxes(title_text = "Average Energy Consumption")
     if category_value == "month":
         fig.update_layout(
             xaxis=dict(
