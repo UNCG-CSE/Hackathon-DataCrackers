@@ -17,6 +17,7 @@ import plotly.graph_objects as go
 from datetime import date
 from time import time
 import datetime as dt
+import calendar
 
 external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css', "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css", 'styles.css']
 
@@ -501,6 +502,80 @@ content_T2_layout = html.Div([
             align="start",
         ),
         html.Br(),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.P("From Year :"),
+                    style=LABEL
+                ),
+                dbc.Col(
+                    html.P(" Month :"),
+                    style=LABEL
+                ),
+                dbc.Col(
+                    html.P("To Year :"),
+                    style=LABEL
+                ),
+                dbc.Col(
+                    html.P(" Month :"),
+                    style=LABEL
+                ),
+
+            ]
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                        dcc.Dropdown(
+                            id="from-year-dropdown",
+                            options=[{'label':'2020', 'value': '2020', 'disabled': False}],
+                            value='2020',
+                            multi=False,
+                            style=DROPDOWN,
+                            className="dropdown-custom",
+                            clearable=False
+                        )
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="from-month-dropdown",
+                        options=[{'label':calendar.month_name[x] , 'value': str(x), 'disabled': False}
+                                 for x in range(1, 12)],
+                        value='1',
+                        multi=False,
+                        style=DROPDOWN,
+                        className="dropdown-custom",
+                        clearable=False
+                    )
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="to-year-dropdown",
+                        options=[{'label': '2020', 'value': '2020', 'disabled': False}],
+                        value='2020',
+                        multi=False,
+                        style=DROPDOWN,
+                        className="dropdown-custom",
+                        clearable=False
+                    )
+                ),
+                dbc.Col(
+                    dcc.Dropdown(
+                        id="to-month-dropdown",
+                        options=[{'label': calendar.month_name[x], 'value': str(x), 'disabled': False}
+                                 for x in range(1, 12)],
+                        value='7',
+                        multi=False,
+                        style=DROPDOWN,
+                        className="dropdown-custom",
+                        clearable=False
+                    )
+                ),
+
+            ],
+            align="start",
+        ),
+        html.Br(),
         html.Div(id='dummy-container'),
         dcc.Graph(id='task2_map', figure={})
     ])
@@ -761,8 +836,17 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
 @app.callback(
     [dash.dependencies.Output('task2_map', 'figure')],
-    [dash.dependencies.Input('meters_2', 'value'),dash.dependencies.Input('choice_dropdown', 'value')])
-def update_output_2(meters,category_value):
+    [dash.dependencies.Input('meters_2', 'value'),
+     dash.dependencies.Input('choice_dropdown', 'value'),
+     dash.dependencies.Input('from-year-dropdown', 'value'),
+     dash.dependencies.Input('from-month-dropdown', 'value'),
+     dash.dependencies.Input('to-year-dropdown', 'value'),
+     dash.dependencies.Input('to-month-dropdown', 'value')])
+def update_output_2(meters, category_value, start_year, start_month, end_year, end_month):
+
+    start_date_object = dt.datetime.strptime(start_year+start_month, "%Y%m").date()
+    end_date_object = dt.datetime.strptime(end_year + end_month + str(calendar.monthrange(int(end_year), int(end_month))[1]), "%Y%m%d").date()
+
     def f(df):
         # df = df.copy()
         # df['Datetime'] = df['Datetime']
@@ -793,7 +877,8 @@ def update_output_2(meters,category_value):
 
         df_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
         df_meter['Datetime'] = pd.to_datetime(df_meter['Datetime'], utc=True)
-        df_meter = df_meter[df_meter['Datetime'] >= '2020-01-01']
+        df_meter = df_meter[(df_meter['Datetime'] >= pd.to_datetime(start_date_object, utc=True)) &
+                            (df_meter['Datetime'] <= pd.to_datetime(end_date_object, utc=True))]
         df_meter = f(df_meter)
 
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
@@ -860,6 +945,15 @@ def update_output_2(meters,category_value):
                 tickmode='array',
                 tickvals=[0, 1, 2, 3, 4, 5, 6],
                 ticktext=['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            )
+        )
+    elif category_value =="hour":
+        fig.update_layout(
+            xaxis=dict(
+                tickmode='array',
+                tickvals=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23],
+                ticktext=['12 AM', '1 AM', '2 AM', '3 AM', '4 AM', '5 AM', '6 AM', '7 AM', '8 AM', '9 AM', '10 AM', '11 AM',
+                          '12 PM', '1 PM', '2 PM', '3 PM', '4 PM', '5 PM', '6 PM', '7 PM', '8 PM', '9 PM', '10 PM', '11 PM']
             )
         )
 
