@@ -9,7 +9,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import dash_bootstrap_components as dbc
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 
 import plotly.express as px
 import pandas as pd
@@ -18,7 +18,7 @@ from datetime import date
 from time import time
 import datetime as dt
 
-external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css', 'styles.css']
+external_stylesheets = ['https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/superhero/bootstrap.min.css', "https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css", 'styles.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -68,8 +68,8 @@ NAVLINK_ACTIVE = {
 
 LAYOUT = {
     "backgroundColor": "#0f2044",
-    "height": "100vh",
-    "fontFamily": "Sofia Pro"
+    "fontFamily": "Sofia Pro",
+    "height": "100vh"
 }
 
 DROPDOWN = {
@@ -87,6 +87,25 @@ HEADER = {
 SUBTITLE = {
     "color": "#fff",
     "fontWeight": "bold"
+}
+
+CONTENT_HEADER = {
+    "paddingTop": "1rem",
+    "color": "#ffb71b",
+    "fontSize": "x-large"
+}
+
+HELP = {
+    "fontSize": "x-large",
+}
+
+HELP_BUTTON = {
+    "margin": "1rem",
+    "backgroundColor":"#0f2044"
+}
+
+MODAL = {
+    "backgroundColor":"#fff"
 }
 
 # Sidebar Layout
@@ -114,6 +133,49 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 # Layout for Task-1
 content_T1_layout = html.Div([
     dbc.Container([
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Span([
+                            html.Span("Energy Consumption & Prediction", style=CONTENT_HEADER),
+                            html.Span([
+                                html.A(html.I(className="fa fa-question-circle", style=HELP), id="open", style=HELP_BUTTON, title="Help"),
+                                dbc.Modal(
+                                    [
+                                        dbc.ModalHeader("Help"),
+                                        dbc.ModalBody([
+                                            html.H5("Energy consumption- Actual and Predicted"),
+                                            html.Div([
+                                                html.P("User should select a meter or multiple meters for which they want to visualise the graph"),
+                                                html.Div([
+                                                    html.P("Then select a time interval which has the options Hour, Week, Month, Day and Time."),
+                                                    html.P("1. Hour: Please select to and from dates and to and from hours(Note: Select dates which are less then 6 months to check the hourly consumption otherwise it may take a longer time to load)."),
+                                                    html.P("2. Week: Once you click on week you will get Year and week dropdown and you can select both the options and you can see the consumption graph for the weeks of the selected year."),
+                                                    html.P("3. Month: Once you select the dates from the datepicker, you will get all the months consumption for that specific period of time."),
+                                                    html.P("4. Year: Once you select the dates from the date pickerr, you will get the years consumption for the selected period of time."),
+                                                    html.P("5. Day: Once you select the to and from dates from the datpicker you will get the daily consumption of all the dates between the selected dates."),
+                                                ], className="HelpSubText"),
+                                                html.P("User can choose from average and total consumption for all the above graphs from the dropdown."),
+                                                html.P("We have a Predictions checkbox if you click that we will get the actual and predicted graph for all the above conditions.And for the hourly consumption we have the prediction interval too displayed."),
+                                            ], className="HelpText"),
+                                            
+
+
+                                        ]
+                                        ),
+                                        dbc.ModalFooter(
+                                            dbc.Button("Close", id="close", className="ml-auto")
+                                        ),
+                                    ],
+                                    id="modal",
+                                    size="xl",
+                                    className= "mymodel"
+                                )
+                                ])])
+                )
+            ]
+        ),
+        html.Br(),
         dbc.Row(
             [
                 dbc.Col(
@@ -343,6 +405,41 @@ content_T2_layout = html.Div([
         dbc.Row(
             [
                 dbc.Col(
+                    html.Span([
+                            html.Span("Average Predictions By Group", style=CONTENT_HEADER),
+                            html.Span([
+                                html.A(html.I(className="fa fa-question-circle", style=HELP), id="open", style=HELP_BUTTON, title="Help"),
+                                dbc.Modal(
+                                    [
+                                        dbc.ModalHeader("Help"),
+                                        dbc.ModalBody([
+                                            html.H5("Average Predictions By Group"),
+                                            html.Div([
+                                                html.P("We choose a time category and we get the graph visualised based on that."),
+                                                html.P("For example, if the user chooses hour of day, the Bryan Building meter. The graph would plot the average actual and average predicted consumption in Bryan from for the year 2020 by hour of the day. There would be one observation per hour in a day (24 total)."),
+                                                html.P("We also have a range slider for all the graphs where the user can shrink to to see detailed data.")
+                                            ], className="HelpText"),
+                                            
+
+
+                                        ]
+                                        ),
+                                        dbc.ModalFooter(
+                                            dbc.Button("Close", id="close", className="ml-auto")
+                                        ),
+                                    ],
+                                    id="modal",
+                                    size="xl",
+                                    className= "mymodel"
+                                )
+                                ])])
+                )
+            ]
+        ),
+        html.Br(),
+        dbc.Row(
+            [
+                dbc.Col(
                     html.P("Meters :"),
                     style=LABEL
                 )
@@ -442,6 +539,16 @@ def render_page_content(pathname):
         ]
     )
 
+@app.callback(
+    Output("modal", "is_open"),
+    [Input("open", "n_clicks"), Input("close", "n_clicks")],
+    [State("modal", "is_open")],
+)
+def toggle_modal(n1, n2, is_open):
+    if n1 or n2:
+        return not is_open
+    return is_open
+
 
 # Callback for Task-1
 @app.callback(
@@ -510,7 +617,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
     layout = go.Layout(
         autosize=False,
-        height=400,
+        height=350,
 
         xaxis=go.layout.XAxis(linecolor='black',
                               linewidth=1,
@@ -645,7 +752,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     )
     string_prefix = string_prefix + "; response time is {:04f} seconds".format(time() - start_time)
 
-    fig.update_layout(template="plotly_white", title=fig_title, xaxis_title=x_label, yaxis_title=y_label, legend_title="Meters",)
+    fig.update_layout(title=fig_title, xaxis_title=x_label, yaxis_title=y_label, legend_title="Meters",)
 
     return fig, string_prefix, fig
 

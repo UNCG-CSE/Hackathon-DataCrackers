@@ -59,3 +59,15 @@ a#page-2-link.nav-link.navlink-active.active {
     background-color: rgb(15,32,68,0.08);
 }
 
+.mymodel .modal-content{
+    background-color: #fff;
+    color: black
+}
+
+.HelpText {
+    padding: 1rem;
+}
+
+.HelpSubText {
+    padding-left: 1rem;
+}
