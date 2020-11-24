@@ -25,6 +25,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 app.config.suppress_callback_exceptions = True
 
+#Reading the dataset to get all the meters and append the names with '_results' for further use
 df_labels = pd.read_excel("../data/Analysis/Meter Names and Labels.xlsx")
 
 names_cleaned = []
@@ -590,18 +591,20 @@ app.layout = html.Div([
 
 
 # this callback uses the current pathname to set the active state of the
-# corresponding nav link to true, allowing users to tell see page they are on
+# corresponding nav link to true, allowing users to tell which page they are on
 @app.callback(
     [Output(f"page-{i}-link", "active") for i in range(1, 3)],
     [Input("url", "pathname")],
 )
+
+
 def toggle_active_links(pathname):
     if pathname == "/":
         # Treat page 1 as the homepage / index
         return True, False
     return [pathname == f"/task-{i}" for i in range(1, 3)]
 
-
+#Callback for navbar
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def render_page_content(pathname):
     if pathname in ["/", "/task-1"]:
@@ -627,7 +630,9 @@ def toggle_modal(n1, n2, is_open):
     return is_open
 
 
-# Callback for Task-1
+# Callbacks for Task-1
+
+#Callback to display only year and week when week is selected 
 @app.callback(
     dash.dependencies.Output('datatable-container', 'style'),
     [dash.dependencies.Input('option-dropdown', 'value')])
@@ -637,6 +642,7 @@ def toggle_container3(toggle_value):
     else:
         return {'display': 'none'}
 
+#Callback to display datepicker when options other than week are selected 
 @app.callback(
     dash.dependencies.Output('datatable-container4', 'style'),
     [dash.dependencies.Input('option-dropdown', 'value')])
@@ -646,7 +652,7 @@ def toggle_container1(toggle_value):
     else:
         return {'display': 'none'}
 
-
+#Callback for the task
 @app.callback(
     [dash.dependencies.Output("loading-output-2", "figure"),
      dash.dependencies.Output('dd-output-container', 'string_prefix'),
@@ -662,6 +668,7 @@ def toggle_container1(toggle_value):
      dash.dependencies.Input('year-dropdown', 'value'),
      dash.dependencies.Input('week-dropdown', 'value')
      ])
+#Inputs in the form
 def update_output(meters, selected_value, value, start_date, end_date, start_hour, end_hour, pred_, year, week):
     start_time = time()
     string_prefix = 'You have selected: '
@@ -680,6 +687,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     if len(string_prefix) == len('You have selected: '):
         string_prefix = 'Select a date to see it displayed here'
 
+#Funtion to get all the date parameters
     def f(df):
         # df = df.copy()
         # df['Datetime'] = df['Datetime']
@@ -708,6 +716,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
 
     fig = go.Figure(layout=layout)
 
+    #Looping through the selected meters
     for meter in meters:
 
         df_meter = pd.read_csv("../data/Analysis/" + meter + "_results.csv")
@@ -719,7 +728,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
         
         df_meter = f(df_meter)
         df_week_meter = f(df_week_meter)
-
+        #Logic for the selected paraemeters
         # df_meter['Date'] = df_meter.Datetime.apply(lambda d: d.split(" ", 1)[0])
         if value == 'TC':
             y_label = "Total Energy Consumption"
@@ -782,6 +791,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
                 df_selected = df_meter.groupby(["Year"]).mean().reset_index()
                 x = df_selected["Year"]
 
+        #Plotting the Pedictions
         if len(pred_) != 0:
             fig.add_trace(go.Scatter(
                 name=meter + ' Actual',
@@ -834,6 +844,7 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
     return fig, string_prefix, fig
 
 
+#Callback for task 2
 @app.callback(
     [dash.dependencies.Output('task2_map', 'figure')],
     [dash.dependencies.Input('meters_2', 'value'),
@@ -842,6 +853,8 @@ def update_output(meters, selected_value, value, start_date, end_date, start_hou
      dash.dependencies.Input('from-month-dropdown', 'value'),
      dash.dependencies.Input('to-year-dropdown', 'value'),
      dash.dependencies.Input('to-month-dropdown', 'value')])
+    
+#Inputs from the form
 def update_output_2(meters, category_value, start_year, start_month, end_year, end_month):
 
     start_date_object = dt.datetime.strptime(start_year+start_month, "%Y%m").date()
