@@ -152,13 +152,13 @@ content_T1_layout = html.Div([
                                                 html.Div([
                                                     html.P("Then select a time interval which has the options Hour, Week, Month, Day and Time."),
                                                     html.P("1. Hour: Please select to and from dates and to and from hours(Note: Select dates which are less then 6 months to check the hourly consumption otherwise it may take a longer time to load)."),
-                                                    html.P("2. Week: Once you click on week you will get Year and week dropdown and you can select both the options and you can see the consumption graph for the weeks of the selected year."),
+                                                    html.P("2. Week: Once you click on week you will get Year and Week dropdown and you can select both the options and you can see the consumption graph for the weeks of the selected year."),
                                                     html.P("3. Month: Once you select the dates from the datepicker, you will get all the months consumption for that specific period of time."),
-                                                    html.P("4. Year: Once you select the dates from the date pickerr, you will get the years consumption for the selected period of time."),
-                                                    html.P("5. Day: Once you select the to and from dates from the datpicker you will get the daily consumption of all the dates between the selected dates."),
+                                                    html.P("4. Year: Once you select the dates from the datepicker, you will get the years consumption for the selected period of time."),
+                                                    html.P("5. Day: Once you select the to and from dates from the datepicker you will get the daily consumption of all the dates between the selected dates."),
                                                 ], className="HelpSubText"),
                                                 html.P("User can choose from average and total consumption for all the above graphs from the dropdown."),
-                                                html.P("We have a Predictions checkbox if you click that we will get the actual and predicted graph for all the above conditions.And for the hourly consumption we have the prediction interval too displayed."),
+                                                html.P("We have a Predictions checkbox if you click that user will get the actual and predicted graph for all the above conditions. And for the hourly consumption we have the displayed prediction interval too."),
                                                 html.P("We also have a range slider for all the graphs where the user can shrink to to see detailed data.")
 
                                             ], className="HelpText"),
