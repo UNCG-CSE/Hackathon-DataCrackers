@@ -62,4 +62,6 @@ An Interactive Dashboard is developed to summerize high-frequency energy consump
 
 ## Setup
 
-The /src folder contains the Jupyter notebooks and the /data folder contains the datasets that are used for this project. The detailed information and documentation about this project is included in the report under /docs folder in this repository.
+The /src folder contains the Jupyter notebooks and the /data folder contains the datasets that are used for this project.
+* The detailed information and documentation about this project is included in the report under /docs folder in this repository.
+
