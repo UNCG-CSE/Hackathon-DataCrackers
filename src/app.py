@@ -133,6 +133,7 @@ content = html.Div(id="page-content", style=CONTENT_STYLE)
 # Layout for Task-1
 content_T1_layout = html.Div([
     dbc.Container([
+        html.Br(),
         dbc.Row(
             [
                 dbc.Col(
@@ -157,6 +158,8 @@ content_T1_layout = html.Div([
                                                 ], className="HelpSubText"),
                                                 html.P("User can choose from average and total consumption for all the above graphs from the dropdown."),
                                                 html.P("We have a Predictions checkbox if you click that we will get the actual and predicted graph for all the above conditions.And for the hourly consumption we have the prediction interval too displayed."),
+                                                html.P("We also have a range slider for all the graphs where the user can shrink to to see detailed data.")
+
                                             ], className="HelpText"),
                                             
 
@@ -402,6 +405,7 @@ content_T1_layout = html.Div([
 # Layout for Task-2
 content_T2_layout = html.Div([
     dbc.Container([
+        html.Br(),
         dbc.Row(
             [
                 dbc.Col(
@@ -417,10 +421,8 @@ content_T2_layout = html.Div([
                                             html.Div([
                                                 html.P("We choose a time category and we get the graph visualised based on that."),
                                                 html.P("For example, if the user chooses hour of day, the Bryan Building meter. The graph would plot the average actual and average predicted consumption in Bryan from for the year 2020 by hour of the day. There would be one observation per hour in a day (24 total)."),
-                                                html.P("We also have a range slider for all the graphs where the user can shrink to to see detailed data.")
                                             ], className="HelpText"),
-                                            
-
+                                    
 
                                         ]
                                         ),
